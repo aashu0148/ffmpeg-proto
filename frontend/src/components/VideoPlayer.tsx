@@ -4,6 +4,7 @@ import { Play, Pause, ChevronDown, Maximize, Minimize } from "lucide-react";
 import screenFull from "screenfull";
 
 import InputSlider from "@components/InputSlider";
+import Spinner from "@components/Spinner/Spinner";
 
 import { formatTime } from "@utils/util";
 
@@ -23,6 +24,7 @@ interface VideoStates {
   duration: number;
   seekedPercent: number;
   fullScreen: boolean;
+  buffering: boolean;
 }
 
 function VideoPlayer({
@@ -43,6 +45,7 @@ function VideoPlayer({
     loadedPercent: 0,
     duration: 0,
     fullScreen: false,
+    buffering: false,
   });
 
   const handleFullScreenToggle = () => {
@@ -126,10 +129,13 @@ function VideoPlayer({
   return (
     <div
       ref={playerWrapperRef}
-      className="relative aspect-video sm:max-w-[100%] sm:w-full sm:h-auto lg:w-auto lg:h-[70vh] lg:min-h-[350px] bg-transparent rounded-2xl shadow-lg overflow-hidden group"
+      className="relative min-w-[300px] aspect-video sm:max-w-[100%] sm:w-full sm:h-auto lg:w-auto lg:h-[70vh] lg:min-h-[350px] bg-transparent rounded-2xl shadow-lg overflow-hidden group"
       onDoubleClick={handleFullScreenToggle}
       onClick={() => setVideoState((p) => ({ ...p, isPlaying: !p.isPlaying }))}
     >
+      {videoState.buffering && (
+        <Spinner className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      )}
       <ReactPlayer
         ref={playerRef}
         url={url}
@@ -139,12 +145,14 @@ function VideoPlayer({
         onDuration={(d) => setVideoState((prev) => ({ ...prev, duration: d }))}
         width="100%"
         height="100%"
+        onBuffer={() => setVideoState((p) => ({ ...p, buffering: true }))}
+        onBufferEnd={() => setVideoState((p) => ({ ...p, buffering: false }))}
         onReady={handleOnPlayerReady}
         {...playerProps}
       />
 
       <div
-        className="group-hover:opacity-100 group-hover:translate-y-0 opacity-0 transform translate-y-full transition duration-500 delay-100 absolute bottom-0 left-0 w-full z-10 flex gap-3 items-center justify-between py-4 px-2 backdrop-blur bg-gradient-to-b from-[rgba(0,0,0,0.25)] to-[rgba(0,0,0,0.75)] text-white"
+        className="group-hover:opacity-100 group-hover:translate-y-0 opacity-0 transform translate-y-full transition duration-500 delay-100 absolute bottom-0 left-0 w-full z-10 flex gap-3 items-center justify-between py-4 px-2 backdrop-blur bg-gradient-to-b from-[rgba(0,0,0,0.0)] to-[rgba(0,0,0,0.75)] text-white"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -160,7 +168,6 @@ function VideoPlayer({
           )}
         </button>
 
-        {/* Current Time / Duration */}
         <div className="text-sm ">
           {formatTime(videoState.playedSeconds)} /{" "}
           {formatTime(videoState.duration)}
@@ -168,13 +175,14 @@ function VideoPlayer({
 
         <InputSlider
           step={1}
+          secondaryProgress={videoState.loadedPercent}
           value={videoState.seekedPercent}
           onChange={handleSeek}
         />
 
         <div className="relative text-black ">
           <select
-            className="w-[50px] bg-white flex text-xs placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded p-[2px] focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
+            className="bg-white flex placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded p-[2px] pr-4 focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
             onChange={(e) => onQualityChange(e.target.value)}
           >
             {qualityOptions.map((option) => (

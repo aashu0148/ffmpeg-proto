@@ -2,7 +2,10 @@ import { useRef, ChangeEvent, HTMLProps, useEffect } from "react";
 
 import { getDebounceFunc } from "@utils/util";
 
-function InputSlider(props: HTMLProps<HTMLInputElement>) {
+interface Props extends HTMLProps<HTMLInputElement> {
+  secondaryProgress?: number;
+}
+function InputSlider({ secondaryProgress, ...props }: Props) {
   const progressRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
   const debounceRef = useRef<Function>(getDebounceFunc());
@@ -43,11 +46,19 @@ function InputSlider(props: HTMLProps<HTMLInputElement>) {
   }, [props.value]);
 
   return (
-    <div className="flex-1 w-full rounded-full h-2 bg-gray-200 relative">
+    <div className="relative flex-1 w-full rounded-full h-2 bg-gray-100">
       <div
         ref={progressRef}
-        className="pointer-events-none h-full w-0 rounded-full bg-yellow-500"
+        className="pointer-events-none z-10 relative h-full w-0 rounded-full bg-yellow-500"
       />
+      {secondaryProgress && secondaryProgress > 0 ? (
+        <div
+          className="pointer-events-none absolute top-0 left-0 z-5 h-full bg-slate-300 rounded-full"
+          style={{ width: `${secondaryProgress}%` }}
+        />
+      ) : (
+        ""
+      )}
       <div
         ref={thumbRef}
         className="pointer-events-none absolute top-1/2 left-0 h-3 w-3 rounded-full bg-yellow-500 dark:bg-yellow-400 z-20"
@@ -56,7 +67,7 @@ function InputSlider(props: HTMLProps<HTMLInputElement>) {
 
       <input
         type="range"
-        className="h-2 absolute top-1/2 left-0 z-10 transform -translate-y-1/2 opacity-0 w-full cursor-pointer"
+        className="h-2 absolute top-1/2 left-0 z-20 transform -translate-y-1/2 opacity-0 w-full cursor-pointer"
         {...props}
         onChange={handleOnChange}
       />
