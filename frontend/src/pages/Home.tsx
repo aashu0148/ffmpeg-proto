@@ -22,7 +22,7 @@ const videoUrls = [
 function Home() {
   const [selectedUrl, setSelectedUrl] = useState(videoUrls[0]);
   return (
-    <div className="bg-slate-950 p-12 w-full min-h-screen flex flex-col gap-10 items-center justify-center">
+    <div className="h-full flex flex-col gap-10 items-center justify-center">
       <div className="flex flex-col items-center gap-1">
         <p className="text-white text-3xl font-mono text-center">
           Try out this Custom Video Player
